@@ -1,13 +1,19 @@
-import {BrowserWindow} from 'electron';
-import {join} from 'path';
-import {URL} from 'url';
+import { BrowserWindow } from "electron";
+import { join } from "path";
+import { URL } from "url";
 
 async function createWindow() {
   const browserWindow = new BrowserWindow({
+    width: 500,
+    height: 200,
+    frame: false,
+    autoHideMenuBar: true,
+    alwaysOnTop: true,
     show: false, // Use 'ready-to-show' event to show window
+    transparent: true,
     webPreferences: {
       webviewTag: false, // The webview tag is not recommended. Consider alternatives like iframe or Electron's BrowserView. https://www.electronjs.org/docs/latest/api/webview-tag#warning
-      preload: join(__dirname, '../../preload/dist/index.cjs'),
+      preload: join(__dirname, "../../preload/dist/index.cjs"),
     },
   });
 
@@ -17,11 +23,11 @@ async function createWindow() {
    *
    * @see https://github.com/electron/electron/issues/25012
    */
-  browserWindow.on('ready-to-show', () => {
+  browserWindow.on("ready-to-show", () => {
     browserWindow?.show();
 
     if (import.meta.env.DEV) {
-      browserWindow?.webContents.openDevTools();
+      browserWindow?.webContents.openDevTools({ mode: "undocked" });
     }
   });
 
@@ -30,12 +36,17 @@ async function createWindow() {
    * Vite dev server for development.
    * `file://../renderer/index.html` for production and test
    */
-  const pageUrl = import.meta.env.DEV && import.meta.env.VITE_DEV_SERVER_URL !== undefined
-    ? import.meta.env.VITE_DEV_SERVER_URL
-    : new URL('../renderer/dist/index.html', 'file://' + __dirname).toString();
-
+  const pageUrl =
+    import.meta.env.DEV && import.meta.env.VITE_DEV_SERVER_URL !== undefined
+      ? import.meta.env.VITE_DEV_SERVER_URL
+      : new URL(
+          "../renderer/dist/index.html",
+          "file://" + __dirname
+        ).toString();
 
   await browserWindow.loadURL(pageUrl);
+
+  // console.log("Window Loaded!");
 
   return browserWindow;
 }
@@ -44,7 +55,7 @@ async function createWindow() {
  * Restore existing BrowserWindow or Create new BrowserWindow
  */
 export async function restoreOrCreateWindow() {
-  let window = BrowserWindow.getAllWindows().find(w => !w.isDestroyed());
+  let window = BrowserWindow.getAllWindows().find((w) => !w.isDestroyed());
 
   if (window === undefined) {
     window = await createWindow();

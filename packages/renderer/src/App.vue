@@ -1,11 +1,16 @@
 <script lang="ts" setup>
+
+import "./index.css"
+
 import ReactiveCounter from '/@/components/ReactiveCounter.vue';
 import ReactiveHash from '/@/components/ReactiveHash.vue';
 import ElectronVersions from '/@/components/ElectronVersions.vue';
+import Window from "./components/Window.vue";
 </script>
 
 <template>
-  <img
+  <window></window>
+  <!-- <img
     alt="Vue logo"
     src="../assets/logo.svg"
     width="150"
@@ -38,7 +43,7 @@ import ElectronVersions from '/@/components/ElectronVersions.vue';
   <p>
     Edit
     <code>packages/renderer/src/App.vue</code> to test hot module replacement.
-  </p>
+  </p> -->
 </template>
 
 <style>
