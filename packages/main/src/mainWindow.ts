@@ -1,16 +1,19 @@
-import { BrowserWindow } from "electron";
+import { BrowserWindow, ipcMain, screen } from "electron";
 import { join } from "path";
 import { URL } from "url";
 
 async function createWindow() {
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+
   const browserWindow = new BrowserWindow({
-    width: 500,
-    height: 200,
+    width: width,
+    height: height,
     frame: false,
     autoHideMenuBar: true,
     alwaysOnTop: true,
     show: false, // Use 'ready-to-show' event to show window
     transparent: true,
+    hasShadow: false,
     webPreferences: {
       webviewTag: false, // The webview tag is not recommended. Consider alternatives like iframe or Electron's BrowserView. https://www.electronjs.org/docs/latest/api/webview-tag#warning
       preload: join(__dirname, "../../preload/dist/index.cjs"),
@@ -30,6 +33,14 @@ async function createWindow() {
       browserWindow?.webContents.openDevTools({ mode: "undocked" });
     }
   });
+
+  ipcMain.on(
+    "set-ignore-mouse-events",
+    (event, ...args: [boolean, Electron.IgnoreMouseEventsOptions]) => {
+      const win = BrowserWindow.fromWebContents(event.sender);
+      win?.setIgnoreMouseEvents(...args);
+    }
+  );
 
   /**
    * URL for main window.
