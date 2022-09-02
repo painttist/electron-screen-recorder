@@ -1,25 +1,24 @@
-import type {ElectronApplication} from 'playwright';
-import {_electron as electron} from 'playwright';
-import {afterAll, beforeAll, expect, test} from 'vitest';
-import {createHash} from 'crypto';
-
+import type { ElectronApplication } from 'playwright';
+import { _electron as electron } from 'playwright';
+import { afterAll, beforeAll, expect, test } from 'vitest';
+// import { createHash } from "crypto";
 
 let electronApp: ElectronApplication;
 
-
 beforeAll(async () => {
-  electronApp = await electron.launch({args: ['.'], timeout: 60000 * 5});
+  electronApp = await electron.launch({ args: ['.'], timeout: 60000 * 5 });
 });
-
 
 afterAll(async () => {
   await electronApp.close();
 });
 
-
 test('Main window state', async () => {
-  const windowState: { isVisible: boolean; isDevToolsOpened: boolean; isCrashed: boolean }
-    = await electronApp.evaluate(({BrowserWindow}) => {
+  const windowState: {
+    isVisible: boolean;
+    isDevToolsOpened: boolean;
+    isCrashed: boolean;
+  } = await electronApp.evaluate(({ BrowserWindow }) => {
     const mainWindow = BrowserWindow.getAllWindows()[0];
 
     const getState = () => ({
@@ -32,7 +31,9 @@ test('Main window state', async () => {
       if (mainWindow.isVisible()) {
         resolve(getState());
       } else
-        mainWindow.once('ready-to-show', () => setTimeout(() => resolve(getState()), 0));
+        mainWindow.once('ready-to-show', () =>
+          setTimeout(() => resolve(getState()), 0),
+        );
     });
   });
 
@@ -41,37 +42,39 @@ test('Main window state', async () => {
   expect(windowState.isDevToolsOpened, 'DevTools was opened').toBeFalsy();
 });
 
-
 test('Main window web content', async () => {
   const page = await electronApp.firstWindow();
-  const element = await page.$('#app', {strict: true});
+  const element = await page.$('#app', { strict: true });
   expect(element, 'Can\'t find root element').toBeDefined();
-  expect((await element.innerHTML()).trim(), 'Window content was empty').not.equal('');
+  expect(
+    (await element.innerHTML()).trim(),
+    'Window content was empty',
+  ).not.equal('');
 });
 
+// test("Preload versions", async () => {
+//   const page = await electronApp.firstWindow();
+//   const renderedVersions = await page.locator("#process-versions").innerText();
 
-test('Preload versions', async () => {
-  const page = await electronApp.firstWindow();
-  const renderedVersions = await page.locator('#process-versions').innerText();
+//   const expectedVersions = await electronApp.evaluate(() => process.versions);
 
-  const expectedVersions = await electronApp.evaluate(() => process.versions);
+//   for (const expectedVersionsKey in expectedVersions) {
+//     expect(renderedVersions).include(
+//       `${expectedVersionsKey}: v${expectedVersions[expectedVersionsKey]}`
+//     );
+//   }
+// });
 
-  for (const expectedVersionsKey in expectedVersions) {
-    expect(renderedVersions).include(`${expectedVersionsKey}: v${expectedVersions[expectedVersionsKey]}`);
-  }
-});
+// test('Preload nodeCrypto', async () => {
+//   const page = await electronApp.firstWindow();
 
+//   /**
+//    * Random string to test hashing
+//    */
+//   const testString = Math.random().toString(36).slice(2, 7);
 
-test('Preload nodeCrypto', async () => {
-  const page = await electronApp.firstWindow();
-
-  /**
-   * Random string to test hashing
-   */
-  const testString = Math.random().toString(36).slice(2, 7);
-
-  await page.fill('input', testString);
-  const renderedHash = await page.inputValue('input[readonly]');
-  const expectedHash = createHash('sha256').update(testString).digest('hex');
-  expect(renderedHash).toEqual(expectedHash);
-});
+//   await page.fill('input', testString);
+//   const renderedHash = await page.inputValue('input[readonly]');
+//   const expectedHash = createHash('sha256').update(testString).digest('hex');
+//   expect(renderedHash).toEqual(expectedHash);
+// });
